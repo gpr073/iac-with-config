@@ -4,4 +4,4 @@ avail_zone = "us-east-1a"
 env_prefix = "dev"
 all = "0.0.0.0/0"
 instance_type = "t2.micro"
-ssh_private_key = "../../newkey.pem"
+ssh_private_key = #Add your private key here
