@@ -1,0 +1,30 @@
+version : '3.8'
+services:
+  app:
+    container_name: todo-app
+    restart: unless-stopped
+    image: public.ecr.aws/f8w6t9j2/todo-docker_app
+    ports:
+      - 3000:3000
+    depends_on:
+      - 'mongodb'
+  mongodb:
+    container_name: mongodb
+    image: mongo
+    restart: unless-stopped
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+  mongo-express:
+    image: mongo-express
+    restart: unless-stopped
+    ports:
+      - 8081:8081
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=password
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+    depends_on:
+      - 'mongodb'

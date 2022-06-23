@@ -1,0 +1,66 @@
+---
+- name: Wait for ssh connection
+  hosts: all
+  tasks:
+  - name: Ensure ssh port is open
+    wait_for:
+      port: 22
+      delay: 10
+      timeout: 100
+  
+- name: Install python3, docker and docker-compose
+  hosts: all
+  become: yes
+  tasks:
+  - name: Install python3 and docker
+    vars:
+      ansible_python_interpreter: /usr/bin/python
+    yum: 
+      name: 
+        - python3
+        - docker
+      update_cache: yes
+      state: present
+  - name: Install docker-compose
+    get_url:
+      url: https://github.com/docker/compose/releases/latest/download/docker-compose-Linux-x86_64
+      dest: /usr/local/bin/docker-compose
+      mode: +x
+  - name: Install docker python dependency
+    pip:
+      name: 
+        - docker
+        - docker-compose
+
+- name: Start docker
+  hosts: all
+  become: yes
+  tasks:
+  - name: Start docker daemon
+    systemd:
+      name: docker
+      state: started
+
+- name: Add ec2-user to docker group
+  hosts: all
+  become: yes
+  tasks:
+  - name: Add ec2-user to docker group
+    user:
+      name: ec2-user
+      groups: docker
+      append: yes
+  - name: Reconnect to server session
+    meta: reset_connection
+
+- name: Run web application
+  hosts: all
+  tasks:
+  - name: Copy docker compose file
+    copy:
+      src: docker-compose.yaml
+      dest: /home/ec2-user/docker-compose.yaml
+  - name: Start containers from compose
+    community.docker.docker_compose:
+      project_src: /home/ec2-user
+      state: present
